@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Detetive do Hardware - Lógica</title>
+    <style>
+        body { font-family: 'Comic Sans MS', sans-serif; background-color: #f0f0f0; text-align: center; margin: 0; padding: 20px; }
+        .container { background: white; border-radius: 25px; padding: 30px; max-width: 800px; margin: auto; border: 5px solid #3498db; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        .img-peca { width: 300px; height: 250px; object-fit: contain; border-radius: 15px; background: #eee; margin-bottom: 20px; border: 3px solid #ddd; }
+        .pergunta { font-size: 30px; font-weight: bold; color: #2c3e50; margin-bottom: 25px; min-height: 80px; }
+        .btn-box { display: flex; justify-content: center; gap: 20px; }
+        button { font-size: 26px; padding: 20px 40px; border: none; border-radius: 15px; cursor: pointer; color: white; font-weight: bold; transition: 0.2s; }
+        .btn-v { background: #27ae60; }
+        .btn-f { background: #e74c3c; }
+        button:hover { transform: scale(1.05); opacity: 0.9; }
+        
+        /* Modal */
+        #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; z-index: 100; }
+        .modal-content { background: white; padding: 50px; border-radius: 30px; border: 8px solid #3498db; }
+        .modal-content h2 { font-size: 50px; color: #2980b9; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 style="color:#2980b9;">🕵️‍♂️ Detetive do Hardware</h1>
+    <p id="contador" style="font-size: 20px; color: #7f8c8d;">Questão 1 de 10</p>
+    
+    <img id="imagem-peca" class="img-peca" src="" alt="Peça de computador">
+    
+    <div id="pergunta" class="pergunta">Carregando...</div>
+    
+    <div class="btn-box">
+        <button class="btn-v" onclick="checar(true)">VERDADEIRO</button>
+        <button class="btn-f" onclick="checar(false)">FALSO</button>
+    </div>
+</div>
+
+<div id="modal">
+    <div class="modal-content">
+        <h2 id="resultado_texto"></h2>
+        <button style="background: #3498db;" onclick="reiniciar()">JOGAR NOVAMENTE</button>
+    </div>
+</div>
+
+<script>
+    const questoesOriginal = [
+        { img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSPrng0usaKLdi_70Z6-Mq02eiZ6Xk27406g&s", q: "Esta peça serve para clicar e movimentar a seta na tela.", a: true },
+        { img: "https://img.freepik.com/vetores-premium/teclado_757131-15330.jpg?semt=ais_user_personalization&w=740&q=80", q: "Esta peça NÃO serve para digitar textos.", a: false },
+        { img: "https://img.freepik.com/vetores-premium/arte-e-ilustracao-vetorial-de-clipart-de-monitor-de-computador_761413-23300.jpg?semt=ais_hybrid&w=740&q=80", q: "O monitor é onde vemos as imagens do computador.", a: true },
+        { img: "https://img.freepik.com/vetores-premium/caixa-do-computador_133472-808.jpg?semt=ais_hybrid&w=740&q=80", q: "Este gabinete é o lugar onde ficam as peças principais.", a: true },
+        { img: "https://down-br.img.susercontent.com/file/2f8c6c34f94ae5a23774cd1b38f0dd03", q: "A caixa de som serve para a gente ouvir música.", a: true },
+        { img: "https://static.vecteezy.com/system/resources/previews/050/446/757/non_2x/flat-style-computer-mouse-illustration-vector.jpg", q: "O mouse NÃO possui botões para clicar e selecionar coisas.", a: false },
+        { img: "https://img.freepik.com/vetores-premium/desenho-vetorial-plano-de-teclado-de-computador-profissional_1323048-57625.jpg?semt=ais_hybrid&w=740&q=80", q: "Nunca devemos bater com força nesta peça.", a: true },
+        { img: "https://img.freepik.com/vetores-premium/vector-isolado-monitor-de-computador-de-tv-moderno-isolado-no-fundo-ilustracao-de-renderizacao-3d_1126714-1910.jpg?semt=ais_hybrid&w=740&q=80", q: "Se desligarmos o monitor, o computador explode.", a: false },
+        { img: "https://img.freepik.com/vetores-premium/desenho-de-icone-de-teclado-criativo-ilustracao-vetorial-de-desenho-animado_1324823-10443.jpg?semt=ais_user_personalization&w=740&q=80", q: "O teclado tem letras e números.", a: true },
+        { img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSk6wOMTWQAZBqd1I3VzZkBJ8kQ6xVP6tUWIg&s", q: "Ninguém usa esta peça para falar, apenas para ouvir.", a: true }
+    ];
+
+    let questoes = [];
+    let indice = 0;
+    let pontos = 0;
+
+    function iniciar() {
+        questoes = [...questoesOriginal].sort(() => Math.random() - 0.5);
+        indice = 0; pontos = 0;
+        document.getElementById("modal").style.display = "none";
+        atualizar();
+    }
+
+    function atualizar() {
+        if (indice < 10) {
+            document.getElementById("contador").innerText = `Questão ${indice + 1} de 10`;
+            document.getElementById("imagem-peca").src = questoes[indice].img;
+            document.getElementById("pergunta").innerText = questoes[indice].q;
+        } else {
+            document.getElementById("resultado_texto").innerText = `VOCÊ CONSEGUIU ${pontos} PONTOS!`;
+            document.getElementById("modal").style.display = "flex";
+        }
+    }
+
+    function checar(resp) {
+        if (resp === questoes[indice].a) pontos++;
+        indice++;
+        atualizar();
+    }
+
+    function reiniciar() { iniciar(); }
+    iniciar();
+</script>
+</body>
+</html>
